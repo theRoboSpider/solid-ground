@@ -1,0 +1,103 @@
+DROP TABLE IF EXISTS Players;
+DROP TABLE IF EXISTS Cards;
+DROP TABLE IF EXISTS Hands;
+DROP TABLE IF EXISTS Game_State;
+DROP TABLE IF EXISTS Bets;
+
+
+CREATE TABLE Players (
+    player_id INT PRIMARY KEY,
+    player_name VARCHAR(100),
+    chips INT DEFAULT 1000
+);
+
+
+CREATE TABLE Cards (
+    card_id INT PRIMARY KEY,
+    suit VARCHAR(10),
+    rank VARCHAR(5)
+);
+
+
+CREATE TABLE Hands (
+    hand_id INT PRIMARY KEY,
+    player_id INT,
+    card1 INT,
+    card2 INT,
+    FOREIGN KEY (player_id) REFERENCES Players(player_id),
+    FOREIGN KEY (card1) REFERENCES Cards(card_id),
+    FOREIGN KEY (card2) REFERENCES Cards(card_id)
+);
+
+
+CREATE TABLE Game_State (
+    game_id INT PRIMARY KEY,
+    current_stage VARCHAR(20),
+    pot INT DEFAULT 0
+);
+
+
+CREATE TABLE Bets (
+    bet_id INT PRIMARY KEY,
+    player_id INT,
+    game_id INT,
+    amount INT,
+    FOREIGN KEY (player_id) REFERENCES Players(player_id),
+    FOREIGN KEY (game_id) REFERENCES Game_State(game_id)
+);
+
+
+INSERT INTO Cards (card_id, suit, rank) VALUES
+(1, 'Hearts', '2'), (2, 'Hearts', '3'), (3, 'Hearts', '4'), (4, 'Hearts', '5'), (5, 'Hearts', '6'),
+(6, 'Hearts', '7'), (7, 'Hearts', '8'), (8, 'Hearts', '9'), (9, 'Hearts', '10'), (10, 'Hearts', 'J'),
+(11, 'Hearts', 'Q'), (12, 'Hearts', 'K'), (13, 'Hearts', 'A'),
+(14, 'Diamonds', '2'), (15, 'Diamonds', '3'), (16, 'Diamonds', '4'), (17, 'Diamonds', '5'), (18, 'Diamonds', '6'),
+(19, 'Diamonds', '7'), (20, 'Diamonds', '8'), (21, 'Diamonds', '9'), (22, 'Diamonds', '10'), (23, 'Diamonds', 'J'),
+(24, 'Diamonds', 'Q'), (25, 'Diamonds', 'K'), (26, 'Diamonds', 'A'),
+(27, 'Clubs', '2'), (28, 'Clubs', '3'), (29, 'Clubs', '4'), (30, 'Clubs', '5'), (31, 'Clubs', '6'),
+(32, 'Clubs', '7'), (33, 'Clubs', '8'), (34, 'Clubs', '9'), (35, 'Clubs', '10'), (36, 'Clubs', 'J'),
+(37, 'Clubs', 'Q'), (38, 'Clubs', 'K'), (39, 'Clubs', 'A'),
+(40, 'Spades', '2'), (41, 'Spades', '3'), (42, 'Spades', '4'), (43, 'Spades', '5'), (44, 'Spades', '6'),
+(45, 'Spades', '7'), (46, 'Spades', '8'), (47, 'Spades', '9'), (48, 'Spades', '10'), (49, 'Spades', 'J'),
+(50, 'Spades', 'Q'), (51, 'Spades', 'K'), (52, 'Spades', 'A');
+
+
+INSERT INTO Players (player_id, player_name, chips) VALUES
+(1, 'Player 1', 1000),
+(2, 'Player 2', 1000);
+
+
+INSERT INTO Game_State (game_id, current_stage, pot) VALUES (1, 'Pre-Flop', 0);
+
+
+SELECT 1, 1, c1.card_id, c2.card_id
+FROM (SELECT card_id FROM Cards ORDER BY RANDOM() LIMIT 1) c1,
+     (SELECT card_id FROM Cards ORDER BY RANDOM() LIMIT 1) c2
+WHERE c1.card_id != c2.card_id
+LIMIT 1;
+
+INSERT INTO Hands (hand_id, player_id, card1, card2)
+SELECT 2, 2, c1.card_id, c2.card_id
+FROM (SELECT card_id FROM Cards ORDER BY RANDOM() LIMIT 1) c1,
+     (SELECT card_id FROM Cards ORDER BY RANDOM() LIMIT 1) c2
+WHERE c1.card_id != c2.card_id
+LIMIT 1;
+
+
+INSERT INTO Bets (bet_id, player_id, game_id, amount) VALUES (1, 1, 1, 50);
+UPDATE Players SET chips = chips - 50 WHERE player_id = 1;
+UPDATE Game_State SET pot = pot + 50 WHERE game_id = 1;
+
+
+INSERT INTO Bets (bet_id, player_id, game_id, amount) VALUES (2, 2, 1, 50);
+UPDATE Players SET chips = chips - 50 WHERE player_id = 2;
+UPDATE Game_State SET pot = pot + 50 WHERE game_id = 1;
+
+
+SELECT p.player_name, h.card1, h.card2, p.chips
+FROM Hands h
+JOIN Players p ON h.player_id = p.player_id;
+
+SELECT current_stage, pot FROM Game_State;
+
+SELECT player_id, amount FROM Bets;
